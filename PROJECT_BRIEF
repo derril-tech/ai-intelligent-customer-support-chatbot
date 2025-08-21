@@ -1,0 +1,330 @@
+# THE PROJECT BRIEF #
+
+# Project Name #
+
+Intelligent Customer Support Chatbot 
+
+# Product Description / Presentation #
+
+
+Intelligent Customer Support Chatbot — Build Brief 
+
+Project Codename: HeliosCS • Bulleted Edition
+Product description / presentation
+HeliosCS is a financial‑grade customer support chatbot engineered for banks, brokerages, and fintechs. It resolves client queries across channels (web, mobile, email, chat) with compliant, auditable answers grounded in internal policies, product docs, and account context. The bot escalates seamlessly to live agents, creates tickets, and logs every interaction for QA and regulatory review.
+What it does:
+•	Understands and resolves account, KYC, funding, trading platform, and statement inquiries; triages fraud/chargeback signals for immediate escalation.
+•	Surfaces portfolio/account information safely with minimum‑necessary redaction and PII masking; supports secure identity verification flows.
+•	Automates routine ops: password resets, 2FA setup, card freeze/unfreeze, market hours/fees, product eligibility checks.
+•	Composes compliant responses with citations to policy pages and knowledge articles; flags low‑confidence answers for human review.
+•	Hands off to human agents via omnichannel routing (email, live chat, voice callback) with complete conversation context.
+Why financial teams love it:
+•	Reduces first‑response time and increases first‑contact resolution while maintaining regulatory compliance.
+•	Grounded, auditable answers with clear sources and redaction—safe for high‑stakes customer interactions.
+•	Plugs into existing CRMs and support desks; measurable deflection and CSAT uplift with granular analytics.
+Framework (and why)
+LangGraph (orchestration) + LangChain (tools/RAG) + RAG (mandatory) with OpenAI + Claude. LangGraph gives deterministic, resumable flows with human‑in‑the‑loop gates for compliance. LangChain standardizes retrievers, tool use, and output schemas. RAG anchors responses in policies, rate cards, and product docs. FE: Next.js 14 + React 18 + Tailwind. BE: FastAPI + PostgreSQL + pgvector + Redis. Deploy on Vercel/Render.
+1. BACKEND ARCHITECTURE (extensive)
+•	Core: FastAPI (async), Python 3.11 preferred, SQLAlchemy 2.0 (async), Pydantic v2.
+•	Auth & Tenancy: JWT access/refresh; SSO (OIDC/SAML) optional; RBAC (admin/agent/bot/analyst); SCIM provisioning.
+•	Data Model: tenants, users, roles, customers, sessions, messages, threads, tickets, knowledge_sources, chunks (vector), redaction_rules, policies, audits, analytics.
+•	RAG Store: pgvector for embeddings of policy docs, FAQs, product disclosures, and macro notes; hybrid search (BM25 + vector) with recency & credibility scoring.
+•	Connectors: Confluence/SharePoint/Google Drive/Notion; CRM (Salesforce, Zendesk, Freshdesk); Core banking help‑center importers.
+•	PII Redaction & Masking: regex + ML detectors for SSN, PAN (tokenized), IBAN, phone/email; reversible vault tokens (last‑4 logic).
+•	Compliance Filters: jurisdiction rules (FINRA/SEC/MiFID/PCI scope); minimum‑necessary output; disclaimer injector; prohibited‑advice guard.
+•	Conversation Orchestrator (LangGraph): Intent → Retrieve → Draft → Redact → ComplyCheck → Answer → Handoff (if needed) → Log/Audit.
+•	Realtime: WebSockets for live chat; streaming responses; agent co‑pilot suggestions; presence and typing indicators.
+•	Ticketing: create/update tickets with transcript + retrieved context; SLA timers; priority escalations (fraud, outage).
+•	Email & Channels: inbound email parser → thread mapping; webhook ingestion from chat/mobile SDKs; outbound notifications with templates.
+•	Knowledge Lifecycle: ingestion pipelines, snapshotting with as‑of dates, approval workflows for new/changed policies.
+•	Analytics: deflection rate, CSAT, time to first response, containment, escalation reasons, article coverage gaps.
+•	Security: HMAC webhook verification; IP allowlists; rate limiting; secrets in KMS/Vault; content security policies.
+•	Observability: structured logs, audit trails, traces/metrics; redaction‑safe logging with context hashes only.
+•	Jobs & Queues: Redis streams for ingestion, embedding, email routing, analytics aggregation; idempotent workers; DLQ.
+•	Storage: S3/GCS with signed URLs; retention policies; encrypted transcripts and artifacts (PDF/CSV attachments).
+•	API Surface: REST endpoints for sessions/messages, retrieval, tickets, knowledge sources, embeddings, redaction tests, audits, analytics, and admin ops.
+2. FRONTEND ARCHITECTURE (extensive)
+•	Stack: Next.js 14 (App Router), React 18, TypeScript, Tailwind, shadcn/ui.
+•	Widgets: embeddable chat widget (web), mobile SDK hooks, agent console (triage view, live chat, ticket pane, knowledge preview).
+•	State & Data: React Query; Zod schemas; optimistic message streaming; offline queue for email replies.
+•	Views: /inbox, /live, /tickets/:id, /customers/:id, /knowledge, /analytics, /settings, /audit.
+•	Compliance UX: disclaimer banners; PII masked by default with reveal controls; export transcript with redactions.
+•	Retrieval Panel: cites sources; quote highlights; freshness indicators; confidence badges; feedback buttons.
+•	Handoff Flow: agent takeover with full context; macros; canned responses; SLA timers & priority indicators.
+•	Internationalization: i18n for UI and replies; locale‑aware formatting; glossary enforcement for regulated terms.
+•	Accessibility: WCAG 2.1 AA; keyboard shortcuts; screen‑reader labels; reduced‑motion mode.
+•	Error UX: retry with jitter; idempotent resubmits; clear escalation paths on failures.
+3. DESIGN REQUIREMENTS (UI/UX design based on product & industry)
+•	Trustworthy financial look: high‑contrast neutrals + accent color; clear hierarchy; dense tables where needed.
+•	Micro‑interactions for status (retrieving, redacted, escalated); hover to reveal citations; copy‑safe number formatting.
+•	Dark/light themes; responsive layouts; printable transcripts; iconography for compliance states.
+4. CORE INTEGRATIONS
+•	OpenAI + Claude via LangChain with function calling for retrieval, ticket ops, summarization, and redaction test tool.
+•	RAG over policies, disclosures, KYC/AML procedures, troubleshooting guides; pgvector embeddings; as‑of timestamps.
+•	CRM & Helpdesk: Salesforce, Zendesk, Freshdesk; Knowledge bases: Confluence/Notion/SharePoint/Google Drive.
+•	Email & Messaging: SMTP/Sendgrid; Twilio/WhatsApp; web chat widget; webhook handlers with HMAC verification.
+5. DELIVERABLES REQUIRED
+•	Next.js 14 frontend with Chat widget, Agent Console, Knowledge Manager, Analytics dashboards, Settings & Audit views.
+•	FastAPI backend with LangGraph orchestrator, RAG services, redaction/compliance filters, ticketing connectors, and analytics.
+•	PostgreSQL schema + pgvector; ingestion pipelines; migrations; seed data (sample policies, FAQs, tickets).
+•	WebSockets for live chat/agent handoff; audit logging; RBAC/SSO; policy validators; webhook outbox.
+•	Deployment configs (Vercel/Render), env templates, OpenAPI docs.
+6. SUCCESS CRITERIA
+•	E2E demo: ingest knowledge → answer customer query → cite sources → redact PII → escalate to agent → create ticket → export audited transcript.
+•	All responses carry citations or are labeled as general guidance; prohibited‑advice guard blocks disallowed outputs.
+•	Idempotent webhook processing; message retries handled; consistent state across CRM/helpdesk and our system.
+•	Analytics reflect deflection, CSAT, SLA compliance; coverage gaps auto‑surface for knowledge curation.
+7. IMPLEMENTATION GUIDELINES
+•	Structured outputs (Pydantic/TS) for message payloads: {intent, entities, retrieved[], draft, redactions[], citations[], compliance{flags}, escalation?}.
+•	Approval workflows for new/edited knowledge; zero‑hallucination policy—block if no credible source.
+•	Deterministic nodes with checkpoints; dry‑run staging mode; feature flags per tenant; locale routing for content.
+•	Prompt hygiene: redact secrets/PII before LLM calls; constrained decoding for monetary values; guardrails for advice language.
+•	Reproducibility and audits: store LLM params, model version, and context hash; attach to transcript artifacts.
+8. SECURITY & COMPLIANCE
+•	PII/PCI/GLBA: tokenize PAN; never log raw PII; data minimization; right‑to‑be‑forgotten endpoints; retention schedules.
+•	Access controls: least privilege; scoped tokens; per‑tenant encryption keys; HSM/KMS for secrets; IP allowlists for admin APIs.
+•	AppSec: OWASP ASVS; SSRF/email header injection defenses; attachment AV scans; CSP & signed cookies on FE.
+•	Regulatory: disclosures and disclaimers for regulated content; audit exports for regulators; model change logs.
+Claude — 5 critical prompts (prebuilt‑architecture aware)
+PROMPT 1 — PROJECT SETUP & ARCHITECTURE
+Extend the existing full‑stack architecture without overwriting configs. FE: Next.js 14 (TypeScript, Tailwind, shadcn/ui, React Query). BE: FastAPI (async SQLAlchemy 2.0, Pydantic v2, JWT, RBAC). Data: PostgreSQL + pgvector, Redis. Add LangGraph flow (Intent → Retrieve → Draft → Redact → ComplyCheck → Answer → Handoff → Log/Audit) with HIL gates; provide env templates and Vercel/Render configs.
+
+PROMPT 2 — CORE BACKEND IMPLEMENTATION
+Implement endpoints/services for sessions/messages, retrieval, embeddings, redaction tests, compliance filters, ticketing (Zendesk/Salesforce), email parser, analytics ingestion, and WebSocket chat. Add idempotent workers, outbox webhooks, and audit logging.
+
+PROMPT 3 — FRONTEND COMPONENTS & UI
+Build the chat widget, agent console, knowledge manager, analytics, and audit views. Maintain WCAG AA, design tokens, presence cursors, and citation/retrieval panels with freshness/confidence indicators.
+
+PROMPT 4 — AI INTEGRATION & FEATURES
+Wire OpenAI + Claude via LangChain for retrieval‑augmented answering, summarization, and suggestion macros. Enforce structured outputs, attach citations, run compliance & PII redaction, and implement escalation triggers.
+
+PROMPT 5 — DEPLOYMENT & E2E DEMO
+Provision DB/Redis, run migrations, seed sample knowledge and tickets. Demonstrate end‑to‑end: user query → cited answer → redact PII → ticket escalation → audited export. Output OpenAPI docs and sample cURL; preserve existing configs.
+
+
+
+
+FOLLOW THIS 8 STEP PLAN TO PREPARE THE INFRASTRUCTURE
+-----------------------------------------------------
+
+# 🚀 Claude Fullstack Repo Prep – Optimized 8 Step Plan
+
+  
+The goal: build an extensive frontend + backend scaffold so Claude Code only has to finish ~20% of the work.  
+Each step must be **completed and reviewed** before advancing.
+IMPORTANT: YOU ARE BUILDING ONLY THE INFRASTRUCTURE OF THE APPLICATION NOT THE APPLICATION ITSELF !!!. FOLLOW THE STEPS IN NUMERICAL ORDER !!! starting from step 1.
+You are doing the groundwork for the application, including setting up the folder structure, configuration files, and any necessary boilerplate code.
+IMPORTANT: the checklist in each step has to be checked off 100% before moving to the next step
+
+---
+
+## STEP 1 — Build the Rich Infrastructure
+Create a **deep scaffold** for both frontend and backend so Claude code can recognize the architecture immediately.
+
+- Build a **frontend app shell** with routing, placeholder pages, components, and styling setup.  
+- Build a **backend app shell** with API structure, health endpoint, and config in place.  
+- Include `REPO_MAP.md`, `API_SPEC.md`, and a draft `CLAUDE.md` in the `docs/` folder.  (create the docs folder if it does not exist)
+- Add **TODO markers and folder-level `_INSTRUCTIONS.md`** files so Claude knows exactly where to add logic.
+
+**Deliverables**
+- Frontend app shell with routing, placeholder pages, components, and styling setup  
+- Backend app shell with API structure, health endpoint, and config  
+- `docs/REPO_MAP.md`, `docs/API_SPEC.md` (stub), and draft `docs/CLAUDE.md`  
+- TODO markers + folder-level `_INSTRUCTIONS.md` files  
+
+**Checklist**
+- [ ] Frontend scaffold built  
+- [ ] Backend scaffold built 
+- [ ] Docs folder created with drafts (`REPO_MAP.md`, `API_SPEC.md`, `CLAUDE.md`)  
+- [ ] TODO markers and `_INSTRUCTIONS.md` stubs in place  
+
+---
+
+## STEP 2 — Enrich the Scaffold
+If the repo looks shallow, enrich it so Claude needs fewer leaps of imagination.  
+
+Add:
+- Sample frontend routes and components (`/`, `/about`, `/dashboard`)  
+- Domain model stubs and types/interfaces  
+- Mock data + fixtures for UI flows  
+- README files with quick run instructions for both frontend and backend  
+- Instructions embedded in folders (e.g. `CLAUDE_TASK: …`)
+
+**Deliverables**
+- Sample routes and pages (`/`, `/about`, `/dashboard`)  
+- Domain model stubs and type definitions  
+- Mock data and fixtures for UI flows  
+- README files for frontend and backend with run instructions  
+- Folder-level instructions (`_INSTRUCTIONS.md`)  
+
+**Checklist**
+- [ ] At least 2–3 sample routes/pages exist  
+- [ ] Domain types/interfaces stubbed out  
+- [ ] Mock data + fixtures included  
+- [ ] README_FRONTEND.md and README_BACKEND.md added  
+- [ ] Each folder has `_INSTRUCTIONS.md` where relevant 
+
+---
+
+## STEP 3 — Audit for Alignment
+Check that the scaffold actually matches the product brief, tech specs, and UX goals.
+Add additional UI/UX elements (if needed) to make the application visually appealing (and update the design requirements after that)
+
+- Do navigation and pages reflect the product’s main flows?  
+- Do API endpoints match the UI needs?  
+- Is the chosen tech stack consistent (no unused or conflicting libraries)?  
+- Is the UX direction reflected (design tokens, layout, component stubs)?
+
+**Deliverables**
+- Alignment review across Product ↔ UI/UX ↔ Tech  
+- Identify any missing flows, mismatched libraries, or conflicting instructions  
+
+**Checklist**
+- [ ] Navigation structure matches product journeys  
+- [ ] Components/pages map to required features  
+- [ ] API endpoints cover MVP needs  
+- [ ] No contradictory or unused technologies  
+
+---
+
+## STEP 4 — Document the Architecture
+Now make the docs **Claude-ready**:
+
+- **REPO_MAP.md**: Full repo breakdown with roles of each folder  
+- **API_SPEC.md**: Endpoints, payloads, error handling  
+- **CLAUDE.md**: Editing rules, coding conventions, AI collaboration guidelines  
+
+These three files are the **context backbone** Claude will use to understand the repo.
+
+**Deliverables**
+- `REPO_MAP.md`: full repo breakdown with folder purposes  
+- `API_SPEC.md`: endpoints, models, error conventions  
+- `CLAUDE.md`: collaboration rules, editing boundaries  
+
+**Checklist**
+- [ ] REPO_MAP.md fully describes structure  
+- [ ] API_SPEC.md covers all MVP endpoints and schemas  
+- [ ] CLAUDE.md includes project overview, editing rules, examples  
+
+---
+
+## STEP 5 — Improve the Prompt
+Enhance the prompt (in `docs/PROMPT_DECLARATION.md`) with details Claude needs:
+
+- FE/BE boundaries and data contracts  
+- UX guidelines (states, accessibility, interaction patterns)  
+- Performance budgets (bundle size, API latency)  
+- Security constraints (auth, rate limits, PII handling)  
+- Testing expectations (unit, integration, end-to-end)
+
+**Deliverables**
+- FE/BE boundaries and contracts  
+- UX guidelines (states, accessibility, patterns)  
+- Performance budgets (bundle size, latency targets)  
+- Security constraints (auth, PII, rate limits)  
+- Testing expectations  
+
+**Checklist**
+- [ ] Prompt includes FE/BE division of responsibility  
+- [ ] UX principles and design tokens specified  
+- [ ] Performance/security/testing requirements added  
+- [ ] Prompt is concrete and actionable for Claude  
+
+---
+
+## STEP 6 — Expert Audit of the Prompt
+Now do a **meticulous audit** of the one-page prompt declaration.
+
+- Add Frontend Architecture, Backend Architecture, Design requirements, Core Integrations, Success Criteria, Implementation Guidelines and Security & Compliance categories from this Project Brief to the prompt declaration.
+- Remove inconsistencies, duplicates, or unused technologies  
+- Ensure Tech Stack → Product → Scaffold alignment (no mismatches)  
+- Add UI/UX details that make the product visually appealing and usable  
+- Double-check frontend and backend folders are ready  
+- Confirm editing boundaries are clear (what Claude can/can’t touch)  
+- Make the declaration **battle-tested and handoff-ready**
+
+**Deliverables**
+- Remove inconsistencies/duplicates  
+- Ensure stack ↔ product ↔ scaffold alignment  
+- Add UI/UX and accessibility details  
+- Clarify file boundaries (editable vs do-not-touch)  
+- Confirm prompt uses Claude-friendly syntax  
+
+**Checklist**
+- [ ] No unused or contradictory tech remains  
+- [ ] UI/UX directives are product-specific and sufficient  
+- [ ] Editing boundaries explicitly defined  
+- [ ] Prompt syntax uses clear, imperative instructions  
+
+---
+
+## STEP 7 — Bird’s-Eye Repo Review
+Do a quick top-level scan for missing pieces:
+
+- All folders contain either code or `_INSTRUCTIONS.md`  
+- `.env.example` files exist for both frontend and backend  
+- CI/CD config is present and not trivially broken  
+- Run scripts (`npm run dev`, `uvicorn …`) work end-to-end  
+- No orphan TODOs without clear ownership
+
+**Deliverables**
+- Verify all core files exist  
+- Confirm environment, CI, and scripts work end-to-end  
+
+**Checklist**
+- [ ] Every folder has code or `_INSTRUCTIONS.md`  
+- [ ] `.env.example` present for both frontend and backend  
+- [ ] CI pipeline triggers and passes basic checks  
+- [ ] Dev script (`scripts/dev.sh`) runs both FE and BE  
+
+---
+
+## STEP 8 — Finalize CLAUDE.md
+This is where Claude gets its **onboarding pack**. Make sure `CLAUDE.md` includes:
+
+- **Project Overview**: one-paragraph purpose, stack, goals, target users  
+- **Folder & File Structure**: what’s editable vs do-not-touch  
+- **Coding Conventions**: style guides, naming rules, commenting expectations  
+- **AI Collaboration Rules**: response format, edit rules, ambiguity handling  
+- **Editing Rules**: full-file vs patches, locked files  
+- **Dependencies & Setup**: frameworks, services, env vars  
+- **Workflow & Tools**: how to run locally, FE/BE boundary, deployment notes  
+- **Contextual Knowledge**: product quirks, domain rules, business logic caveats  
+- **Examples**: good vs bad AI answer
+
+**Deliverables**
+- Project overview (purpose, stack, goals, users)  
+- Folder & file structure with editable vs do-not-touch  
+- Coding conventions (style, naming, commenting)  
+- AI collaboration rules (response style, edit rules, ambiguity handling)  
+- Dependencies and setup instructions  
+- Workflow, deployment notes, contextual knowledge  
+- Good vs bad answer examples  
+- Fill out all the missing information in the CLAUDE.md file
+
+**Checklist**
+- [ ] Project overview section filled in  
+- [ ] File boundaries clearly defined  
+- [ ] Coding/style conventions included  
+- [ ] AI collaboration & editing rules written  
+- [ ] Dependencies & env notes covered  
+- [ ] Workflow & deployment info added  
+- [ ] Contextual knowledge documented  
+- [ ] Good vs bad examples included  
+- [ ] CLAUDE.md file does not miss any important information
+
+---
+
+# ✅ Outcome
+When this 8-step plan is followed:
+- The repo is a **rich, opinionated scaffold** (80% done).  
+- Docs give Claude **clear boundaries + context**.  
+- The one-page prompt is **battle-tested** and aligned.  
+- Claude Code can safely and efficiently generate the missing 20%.  
+
+
+
+
+
+
+
